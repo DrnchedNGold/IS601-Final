@@ -28,6 +28,25 @@
   </div>
 </div>
 
+<!-- Usage Metrics Card -->
+<div 
+  id="usageMetricsCard"
+  class="bg-white shadow-lg rounded-lg mb-6 p-6 
+         transition-all duration-300 hover:shadow-xl border border-gray-100"
+>
+  <h2 class="text-xl font-bold mb-4 text-gray-800 flex items-center">
+    <svg class="w-5 h-5 mr-2 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m4 4v-6a2 2 0 00-2-2H7a2 2 0 00-2 2v6"></path>
+    </svg>
+    Usage Metrics
+  </h2>
+  <div id="usageMetricsContent" class="space-y-2 text-gray-700">
+    <div><strong>Total Calculations:</strong> <span id="metricTotal">-</span></div>
+    <div><strong>Average Operands:</strong> <span id="metricAvg">-</span></div>
+    <div><strong>Most Common Type:</strong> <span id="metricCommon">-</span></div>
+    <div><strong>Last Calculation:</strong> <span id="metricLast">-</span></div>
+  </div>
+</div>
 <!-- New Calculation Card -->
 <div 
   class="bg-white shadow-lg rounded-lg mb-6 p-6 
@@ -54,6 +73,7 @@
           <option value="subtraction">Subtraction</option>
           <option value="multiplication">Multiplication</option>
           <option value="division">Division</option>
+          <option value="exponentiation">Exponentiation</option>
         </select>
       </div>
       <!-- Inputs -->
@@ -482,8 +502,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
+  // Load usage metrics from the API
+  async function loadUsageMetrics() {
+    try {
+      const resp = await fetch('/calculations/report', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!resp.ok) throw new Error('Failed to load usage metrics');
+      const metrics = await resp.json();
+      document.getElementById('metricTotal').textContent = metrics.total_calculations;
+      document.getElementById('metricAvg').textContent = metrics.average_operands.toFixed(2);
+      document.getElementById('metricCommon').textContent = metrics.most_common_type;
+      document.getElementById('metricLast').textContent = metrics.last_calculation_at
+        ? new Date(metrics.last_calculation_at).toLocaleString()
+        : 'N/A';
+    } catch (err) {
+      document.getElementById('usageMetricsContent').textContent = 'Failed to load usage metrics';
+    }
+  }
+
   // Initial load
   loadCalculations();
+  loadUsageMetrics();
   
   // Optional features:
   

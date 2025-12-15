@@ -265,6 +265,96 @@ Then submit the GitHub repository link as instructed.
 
 ---
 
+# ✨ User Profile & Password Change Feature
+
+This application now supports user profile management and secure password changes.
+
+## Features
+
+- View and update your profile (first name, last name, username, email)
+- Change your password securely (old password required)
+- All changes require authentication (JWT)
+- Frontend at `/profile` for profile and password management
+
+---
+
+# 🧮 Additional Calculation Type: Exponentiation
+
+The calculator now supports exponentiation (`base ** exponent`).
+
+- Select "Exponentiation" in the operation dropdown on the dashboard.
+- Enter two numbers: the base and the exponent (e.g., `2, 8` for $2^8$).
+- Result is computed and shown in the calculation history.
+
+## API Example
+
+```json
+{
+  "type": "exponentiation",
+  "inputs": [2, 8]
+}
+```
+
+Result: `256`
+
+---
+
+# 📊 Report/History Feature
+
+The dashboard now displays usage statistics for your calculations:
+
+- **Total Calculations:** Number of calculations performed.
+- **Average Operands:** Average number of numbers used per calculation.
+- **Most Common Type:** Most frequently used calculation type.
+- **Last Calculation:** Date/time of the most recent calculation.
+
+## API Example
+
+- `GET /calculations/report` — Returns a summary of your calculation usage:
+
+```json
+{
+  "total_calculations": 5,
+  "average_operands": 2.4,
+  "most_common_type": "addition",
+  "last_calculation_at": "2025-12-15T17:00:00"
+}
+```
+
+## Frontend Usage
+
+- Go to `/dashboard` to view your usage metrics at the top of the page.
+- Metrics update automatically as you perform calculations.
+
+---
+
+## API Endpoints
+
+- `GET /users/me` — Get current user's profile (JWT required)
+- `PUT /users/me` — Update profile fields (JWT required)
+- `POST /users/me/change-password` — Change password (JWT required)
+- `POST /calculations` — Create a calculation (supports exponentiation)
+- `GET /calculations/report` — Get calculation usage stats (JWT required)
+
+## Frontend Usage
+
+- Go to `/profile` after logging in to view or update your profile and change your password.
+- Go to `/dashboard` to perform calculations, including exponentiation and view usage metrics.
+- All changes are validated client-side and server-side.
+- You must be logged in; JWT is stored in localStorage after login.
+
+## Running Tests
+
+- **Unit tests:**  
+  `pytest tests/unit/`
+- **Integration tests:**  
+  `pytest tests/integration/`
+- **E2E tests (Playwright):**  
+  `pytest tests/e2e/`  
+  (Requires Playwright and a running server)
+
+---
+
 # 🐳 Docker Hub Image
 
 The latest Docker image for this project is available at:

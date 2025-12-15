@@ -36,6 +36,7 @@ class CalculationType(str, Enum):
     SUBTRACTION = "subtraction"
     MULTIPLICATION = "multiplication"
     DIVISION = "division"
+    EXPONENTIATION = "exponentiation"
 
 class CalculationBase(BaseModel):
     """
@@ -49,7 +50,7 @@ class CalculationBase(BaseModel):
     """
     type: CalculationType = Field(
         ...,  # The ... means this field is required
-        description="Type of calculation (addition, subtraction, multiplication, division)",
+        description="Type of calculation (addition, subtraction, multiplication, division, exponentiation)",
         example="addition"
     )
     inputs: List[float] = Field(
@@ -140,7 +141,8 @@ class CalculationBase(BaseModel):
         json_schema_extra={
             "examples": [
                 {"type": "addition", "inputs": [10.5, 3, 2]},
-                {"type": "division", "inputs": [100, 2]}
+                {"type": "division", "inputs": [100, 2]},
+                {"type": "exponentiation", "inputs": [2, 8]}
             ]
         }
     )
@@ -213,6 +215,15 @@ class CalculationUpdate(BaseModel):
         from_attributes=True,
         json_schema_extra={"example": {"inputs": [42, 7]}}
     )
+
+class CalculationReport(BaseModel):
+    """
+    Schema for calculation usage report/summary.
+    """
+    total_calculations: int = Field(..., description="Total number of calculations performed by the user")
+    average_operands: float = Field(..., description="Average number of operands per calculation")
+    most_common_type: str = Field(..., description="Most frequently used calculation type")
+    last_calculation_at: Optional[datetime] = Field(None, description="Timestamp of the most recent calculation")
 
 class CalculationResponse(CalculationBase):
     """

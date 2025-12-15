@@ -39,6 +39,7 @@ from app.schemas.calculation import CalculationBase, CalculationResponse, Calcul
 from app.schemas.token import TokenResponse  # API token schema
 from app.schemas.user import UserCreate, UserResponse, UserLogin  # User schemas
 from app.database import Base, get_db, engine  # Database connection
+from app.routes.user import router as user_router
 
 
 # ------------------------------------------------------------------------------
@@ -69,6 +70,8 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan  # Pass our lifespan context manager
 )
+
+app.include_router(user_router)
 
 # ------------------------------------------------------------------------------
 # Static Files and Templates Configuration
@@ -160,6 +163,13 @@ def edit_calculation_page(request: Request, calc_id: str):
         HTMLResponse: Rendered template with calculation ID passed to frontend
     """
     return templates.TemplateResponse("edit_calculation.html", {"request": request, "calc_id": calc_id})
+
+@app.get("/profile", response_class=HTMLResponse, tags=["web"])
+def profile_page(request: Request):
+    """
+    User profile page for viewing and editing profile and changing password.
+    """
+    return templates.TemplateResponse("profile.html", {"request": request})
 
 
 # ------------------------------------------------------------------------------
@@ -393,6 +403,41 @@ def delete_calculation(
     db.commit()
     return None
 
+
+# ------------------------------------------------------------------------------
+# Report/History Endpoint
+# ------------------------------------------------------------------------------
+from collections import Counter
+from app.schemas.calculation import CalculationReport
+
+@app.get("/calculations/report", response_model=CalculationReport, tags=["calculations"])
+def get_calculation_report(
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get usage statistics for the current user's calculations.
+    Returns total calculations, average operands, most common type, and last calculation time.
+    """
+    calculations = db.query(Calculation).filter(Calculation.user_id == current_user.id).all()
+    total = len(calculations)
+    if total == 0:
+        return CalculationReport(
+            total_calculations=0,
+            average_operands=0.0,
+            most_common_type="N/A",
+            last_calculation_at=None
+        )
+    avg_operands = sum(len(c.inputs) for c in calculations) / total
+    type_counts = Counter(c.type for c in calculations)
+    most_common_type = type_counts.most_common(1)[0][0]
+    last_calc = max(c.created_at for c in calculations)
+    return CalculationReport(
+        total_calculations=total,
+        average_operands=avg_operands,
+        most_common_type=most_common_type,
+        last_calculation_at=last_calc
+    )
 
 # ------------------------------------------------------------------------------
 # Main Block to Run the Server
