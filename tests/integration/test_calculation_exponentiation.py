@@ -6,16 +6,26 @@ client = TestClient(app)
 
 @pytest.fixture
 def user_token(db_session):
+    import uuid
+    unique_id = str(uuid.uuid4())[:8]
+    username = f"expuser_{unique_id}"
+    email = f"expuser_{unique_id}@example.com"
+    
     reg_data = {
         "first_name": "Exp",
         "last_name": "User",
-        "email": "expuser@example.com",
-        "username": "expuser",
+        "email": email,
+        "username": username,
         "password": "ExpPass123!",
         "confirm_password": "ExpPass123!"
     }
-    client.post("/auth/register", json=reg_data)
-    login = client.post("/auth/login", json={"username": "expuser", "password": "ExpPass123!"})
+    reg_response = client.post("/auth/register", json=reg_data)
+    if reg_response.status_code != 201:
+        raise Exception(f"Registration failed with status {reg_response.status_code}: {reg_response.json()}")
+        
+    login = client.post("/auth/login", json={"username": username, "password": "ExpPass123!"})
+    if login.status_code != 200:
+        raise Exception(f"Login failed with status {login.status_code}: {login.json()}")
     return login.json()["access_token"]
 
 def test_create_exponentiation_calculation(user_token):

@@ -4,8 +4,14 @@ from app.models.user import User
 class DummyUser:
     def __init__(self, password):
         self.password = User.hash_password(password)
+    
     def verify_password(self, plain):
         return User.verify_password(self, plain)
+    
+    def update(self, **kwargs):
+        """Update user attributes with provided keyword arguments."""
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
 def test_hash_and_verify_password():
     user = DummyUser("TestPass123!")

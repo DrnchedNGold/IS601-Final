@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserUpdate, PasswordUpdate, UserResponse
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user_db
 from app.auth.jwt import get_password_hash
 
 router = APIRouter(
@@ -12,7 +12,7 @@ router = APIRouter(
 )
 
 @router.get("/me", response_model=UserResponse)
-def read_profile(current_user: User = Depends(get_current_user)):
+def read_profile(current_user: User = Depends(get_current_user_db)):
     """Get current user's profile."""
     return current_user
 
@@ -20,7 +20,7 @@ def read_profile(current_user: User = Depends(get_current_user)):
 def update_profile(
     user_update: UserUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_db)
 ):
     """Update current user's profile info."""
     update_data = user_update.dict(exclude_unset=True)
@@ -43,7 +43,7 @@ def update_profile(
 def change_password(
     pw_update: PasswordUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_db)
 ):
     """Change current user's password."""
     if not current_user.verify_password(pw_update.current_password):

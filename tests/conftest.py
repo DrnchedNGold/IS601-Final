@@ -214,6 +214,14 @@ def fastapi_server():
         logger.warning("Test server forcefully stopped.")
 
 # ======================================================================================
+# Live Server Fixture (alias for fastapi_server)
+# ======================================================================================
+@pytest.fixture(scope="session")
+def live_server(fastapi_server):
+    """Alias for fastapi_server fixture to support E2E tests."""
+    return fastapi_server
+
+# ======================================================================================
 # Playwright Fixtures for UI Testing
 # ======================================================================================
 @pytest.fixture(scope="session")

@@ -306,6 +306,39 @@ def create_calculation(
         )
 
 
+# Report/History Endpoint - Must come before parameterized routes
+from collections import Counter
+from app.schemas.calculation import CalculationReport
+
+@app.get("/calculations/report", response_model=CalculationReport, tags=["calculations"])
+def get_calculation_report(
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get usage statistics for the current user's calculations.
+    Returns total calculations, average operands, most common type, and last calculation time.
+    """
+    calculations = db.query(Calculation).filter(Calculation.user_id == current_user.id).all()
+    total = len(calculations)
+    if total == 0:
+        return CalculationReport(
+            total_calculations=0,
+            average_operands=0.0,
+            most_common_type="N/A",
+            last_calculation_at=None
+        )
+    avg_operands = sum(len(c.inputs) for c in calculations) / total
+    type_counts = Counter(c.type for c in calculations)
+    most_common_type = type_counts.most_common(1)[0][0]
+    last_calc = max(c.created_at for c in calculations)
+    return CalculationReport(
+        total_calculations=total,
+        average_operands=avg_operands,
+        most_common_type=most_common_type,
+        last_calculation_at=last_calc
+    )
+
 # Browse / List Calculations
 @app.get("/calculations", response_model=List[CalculationResponse], tags=["calculations"])
 def list_calculations(
@@ -404,40 +437,6 @@ def delete_calculation(
     return None
 
 
-# ------------------------------------------------------------------------------
-# Report/History Endpoint
-# ------------------------------------------------------------------------------
-from collections import Counter
-from app.schemas.calculation import CalculationReport
-
-@app.get("/calculations/report", response_model=CalculationReport, tags=["calculations"])
-def get_calculation_report(
-    current_user = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Get usage statistics for the current user's calculations.
-    Returns total calculations, average operands, most common type, and last calculation time.
-    """
-    calculations = db.query(Calculation).filter(Calculation.user_id == current_user.id).all()
-    total = len(calculations)
-    if total == 0:
-        return CalculationReport(
-            total_calculations=0,
-            average_operands=0.0,
-            most_common_type="N/A",
-            last_calculation_at=None
-        )
-    avg_operands = sum(len(c.inputs) for c in calculations) / total
-    type_counts = Counter(c.type for c in calculations)
-    most_common_type = type_counts.most_common(1)[0][0]
-    last_calc = max(c.created_at for c in calculations)
-    return CalculationReport(
-        total_calculations=total,
-        average_operands=avg_operands,
-        most_common_type=most_common_type,
-        last_calculation_at=last_calc
-    )
 
 # ------------------------------------------------------------------------------
 # Main Block to Run the Server

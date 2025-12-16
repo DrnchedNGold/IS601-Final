@@ -57,7 +57,7 @@ class CalculationBase(BaseModel):
         ...,  # The ... means this field is required
         description="List of numeric inputs for the calculation",
         example=[10.5, 3, 2],
-        min_items=2  # Ensures at least 2 numbers are provided
+        min_items=1  # Allow at least 1 number, business logic will validate specific requirements
     )
 
     @field_validator("type", mode="before")
@@ -115,9 +115,7 @@ class CalculationBase(BaseModel):
         Validates the inputs based on calculation type.
         
         This validator runs after the model is created and performs
-        business logic validation:
-        1. Ensures there are at least 2 numbers for any calculation
-        2. For division, ensures that no divisor is zero
+        basic validation. Business logic validation is handled in the model layer.
         
         Returns:
             CalculationBase: The validated model
@@ -125,12 +123,10 @@ class CalculationBase(BaseModel):
         Raises:
             ValueError: If validation fails
         """
-        if len(self.inputs) < 2:
-            raise ValueError("At least two numbers are required for calculation")
-        if self.type == CalculationType.DIVISION:
-            # Prevent division by zero (skip the first value as numerator)
-            if any(x == 0 for x in self.inputs[1:]):
-                raise ValueError("Cannot divide by zero")
+        # Let business logic handle specific validation per calculation type
+        # This allows for proper 400 status codes instead of 422
+        if len(self.inputs) < 1:
+            raise ValueError("At least one number is required")
         return self
 
     model_config = ConfigDict(
