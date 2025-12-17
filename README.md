@@ -2,6 +2,15 @@
 
 ---
 
+# 🎥 Demo Video
+
+**See the application in action:**  
+[▶️ Watch the Demo Video on Google Drive](https://drive.google.com/file/d/1v6O5MZQ3HZGXIjKejOmeEpgnVUDPGmH9/view?usp=sharing)
+
+This video demonstrates the main features, user flows, and UI of the project.
+
+---
+
 # 🧩 1. Install Homebrew (Mac Only)
 
 > Skip this step if you're on Windows.
